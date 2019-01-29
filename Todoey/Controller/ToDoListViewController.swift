@@ -10,20 +10,33 @@ import UIKit
 
 class ToDoListViewController: UITableViewController {
 
-    var itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogorgon"]
+    var itemArray = [Item]()
     
     let defaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        if let items = defaults.array(forKey: "ToDoItemList") as? [String] {
+        let newItem = Item()
+        newItem.title = "Find Mike"
+        itemArray.append(newItem)
+        
+        let newItem2 = Item()
+        newItem2.title = "go for a walk"
+        itemArray.append(newItem2)
+        
+        let newItem3 = Item()
+        newItem3.title = "kill Demomorgan"
+        itemArray.append(newItem3)
+
+        
+        if let items = defaults.array(forKey: "ToDoItemList") as? [Item] {
             itemArray = items
         }
         
     }
 
-    //MARK - Tableview DataSource Methods
+    //MARK: - Tableview DataSource Methods
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return itemArray.count
@@ -33,28 +46,30 @@ class ToDoListViewController: UITableViewController {
 
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
         
-        cell.textLabel?.text = itemArray[indexPath.row]
+        cell.textLabel?.text = itemArray[indexPath.row].title
+        
+        let item = itemArray[indexPath.row]
+        
+        //This below is a ternary operator used to replace an If statement.
+        // Format for a ternary operator :
+        // value = condition ? valueIfTrue : valueIfFalse
+        
+        cell.accessoryType = item.done ? .checkmark : .none
         
         return cell
         
     }
     
-    //MARK - TableView Delegate Methods
+    //MARK: - TableView Delegate Methods
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-       
-        print(itemArray[indexPath.row] + " Selected")
- 
         
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        } else {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
+        self.tableView.reloadData()
         
         tableView.deselectRow(at: indexPath, animated: true)
-        
+      
     }
     
     // This block of code below is pretty standard for having a user entered value captured
@@ -67,7 +82,9 @@ class ToDoListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add item", style: .default) { (action) in
         // This is what happens when the user clicks ok on the Add Item UIAlert
             
-            self.itemArray.append(textField.text!)
+            let newItem = Item()
+            newItem.title = textField.text!
+            self.itemArray.append(newItem)
             
             self.defaults.set(self.itemArray, forKey: "ToDoItemList")
             
